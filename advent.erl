@@ -17,6 +17,9 @@ compile(Filename) ->
 start() ->
     Filename = get_last_day(),
     io:fwrite(case compile(Filename) of
-        false -> "Couldn't compile " ++ Filename;
-        Module -> io_lib:format("1st part: ~p~n2nd part: ~p~n", [Module:easy(), Module:hard()])
+        false -> 
+            "Couldn't compile " ++ Filename;
+        Module ->
+            {Easy, Hard} = Module:answer(), 
+            io_lib:format("1st part: ~p~n2nd part: ~p~n", [Easy, Hard])
     end).
