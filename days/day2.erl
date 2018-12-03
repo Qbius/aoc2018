@@ -21,37 +21,14 @@ char_map(String) ->
 
 hard() ->
     {ok, Contents} = file:read_file("input/day2"),
-    {LetterBegins, LetterEnds} = lists:foldl(fun([Begin | _] = Line, {BeginsMap, EndsMap}) ->
-        End = lists:last(Line),
-        {BeginsMap#{Begin => [Line | maps:get(Begin, BeginsMap, [])]}, EndsMap#{End => [Line | maps:get(End, EndsMap, [])]}}
-    end, {#{}, #{}}, [binary_to_list(BinLine) || BinLine <- string:split(Contents, <<"\n">>, all)]),
-    find_different_by_one(maps:values(LetterBegins) ++ maps:values(LetterEnds)).
-
-find_different_by_one([List | Rest]) ->
-    Result = lists:filter(fun
-        (nomatch) -> false;
-        (_) -> true
-    end, [case different_character_count(Line1, Line2, 0) of
-        1 -> {Line1, Line2};
-        _ -> nomatch
-    end || Line1 <- List, Line2 <- List]),
-    case Result of
-        [] ->
-            find_different_by_one(Rest);
-        [{First, Second} | _] ->
-            remove_different_character(First, Second, [])
-    end.
-
-different_character_count([H | T1], [H | T2], Count) ->
-    different_character_count(T1, T2, Count);
-different_character_count([_H1 | T1], [_H2 | T2], Count) ->
-    different_character_count(T1, T2, Count + 1);
-different_character_count([], [], Count) ->
-    Count.
-
-remove_different_character([H | T1], [H | T2], Result) ->
-    remove_different_character(T1, T2, [H | Result]);
-remove_different_character([_H1 | T1], [_H2 | T2], Result) ->
-    remove_different_character(T1, T2, Result);
-remove_different_character([], [], Result) ->
-    lists:reverse(Result).
+    Lines = [binary_to_list(BinLine) || BinLine <- string:split(Contents, <<"\n">>, all)],
+    lists:usort(lists:filtermap(fun
+        RemoveDifferentChar({[H | R1], [H | R2], Count, Result}) ->
+            RemoveDifferentChar({R1, R2, Count, [H | Result]});
+        RemoveDifferentChar({[_H1 | R1], [_H2 | R2], Count, Result}) ->
+            RemoveDifferentChar({R1, R2, Count, Result});
+        RemoveDifferentChar({[], [], Count, Result}) when (length(Result) + 1) =:= Count ->
+            {true, lists:reverse(Result)};
+        RemoveDifferentChar({[], [], _Count, _Result}) ->
+            false        
+    end, [{Line1, Line2, length(Line1), []} || Line1 <- Lines, Line2 <- Lines])).
