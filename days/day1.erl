@@ -1,9 +1,9 @@
 -module(day1).
--export([easy/0, hard/0]).
+-export([answer/0]).
 
-easy() ->
+answer() ->
     {ok, Contents} = file:read_file("input/day1"),
-    analize_input(binary_to_list(Contents), 0).
+    {analize_input(binary_to_list(Contents), 0), find_duplicate_frequency([], sets:new(), 0)}.
     
 analize_input([], Result) ->
     Result;
@@ -17,9 +17,6 @@ analize_input(Input, Result) ->
         $- -> Result - list_to_integer(Number)
     end,
     analize_input(Rest, NewResult).
-
-hard() ->
-    find_duplicate_frequency([], sets:new(), 0).
 
 find_duplicate_frequency([], Found, Frequency) ->
     {ok, Contents} = file:read_file("input/day1"),
