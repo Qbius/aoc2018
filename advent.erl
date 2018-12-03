@@ -1,9 +1,6 @@
 -module(advent).
 -export([get/1]).
 
-get_last_day() ->
-    lists:nth(1, lists:reverse(lists:sort(filelib:wildcard("days/day*.erl")))).
-
 compile(Filename) ->
     case compile:file(Filename) of
         {ok, Module} ->
