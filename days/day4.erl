@@ -18,7 +18,7 @@ get_guard_map([H | T], Guard, Map) ->
                     Map;
                 _ ->
                     ActionMap = maps:get(Guard, Map, #{}),
-                    Map#{Guard => ActionMap#{Date => [{Act, Minute} | maps:get(Date, ActionMap, [])]}}
+                    Map#{Guard => ActionMap#{Date => [{Minute, Act} | maps:get(Date, ActionMap, [])]}}
             end,
             get_guard_map(T, Guard, NewMap)
     end;
@@ -36,22 +36,24 @@ parse_log_line([$[, Y1, Y2, Y3, Y4, $-, M1, M2, $-, D1, D2, _Space1, _, _, $:, M
     end}.
 
 process_guard_map(Map) ->
-    maps:from_list(lists:map(fun(Key) ->
+    X = maps:from_list(lists:map(fun(Key) ->
         ActionMap = maps:get(Key, Map),
         analyze_guard_log(ActionMap, Key)
-    end, maps:keys(Map))).
+    end, maps:keys(Map))),
+    io:format("~p~n", [X]),
+    X.
 
 analyze_guard_log(ActionMap, Guard) ->
-    AllMinutes = lists:append([minutes_asleep(maps:get(Key, ActionMap), awake, []) || Key <- maps:keys(ActionMap)]),
+    AllMinutes = lists:append([minutes_asleep(lists:sort(maps:get(Key, ActionMap)), awake, []) || Key <- maps:keys(ActionMap)]),
     {length(AllMinutes), {AllMinutes, Guard}}.
 
-minutes_asleep([{falls, Minute} | T], awake, Result) ->
+minutes_asleep([{Minute, falls} | T], awake, Result) ->
     minutes_asleep(T, asleep, Result ++ lists:seq(Minute, 59));
-minutes_asleep([{wakes, Minute} | T], asleep, Result) ->
+minutes_asleep([{Minute, wakes} | T], asleep, Result) ->
     minutes_asleep(T, awake, lists:takewhile(fun(I) -> I < Minute end, Result));
-minutes_asleep([{falls, _} | T], asleep, Result) ->
+minutes_asleep([{_, falls} | T], asleep, Result) ->
     minutes_asleep(T, asleep, Result);
-minutes_asleep([{wakes, _} | T], awake, Result) ->
+minutes_asleep([{_, wakes} | T], awake, Result) ->
     minutes_asleep(T, awake, Result);
 minutes_asleep([], _, Result) ->
     Result.

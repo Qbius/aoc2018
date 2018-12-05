@@ -13,10 +13,11 @@ compile(Filename) ->
 
 get(DayNumber) ->
     Filename = "days/day" ++ integer_to_list(DayNumber) ++ ".erl",
-    case compile(Filename) of
+    io:fwrite(case compile(Filename) of
         false -> 
             "Couldn't compile " ++ Filename;
         Module ->
             {Easy, Hard} = Module:answer(), 
             io_lib:format("1st part: ~p~n2nd part: ~p~n", [Easy, Hard])
-    end.
+    end),
+    done.
