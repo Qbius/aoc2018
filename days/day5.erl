@@ -21,6 +21,6 @@ react([], Result, State) ->
     {lists:reverse(Result), State}.
 
 find_the_meanest(Polymer) ->
-    lists:nth(1, lists:sort(lists:map(fun(Letter) ->
+    lists:nth(1, lists:sort(concurrent:map(fun(Letter) ->
         react([C || C <- Polymer, C =/= Letter andalso C =/= (Letter + $a - $A)])
     end, lists:seq($A, $Z)))).
