@@ -3,7 +3,8 @@
 
 answer() ->
     {ok, Contents} = file:read_file("input/day4"),
-    {finalize(process_guard_map(get_guard_map([binary_to_list(Line) || Line <- string:split(Contents, "\r\n", all)]))), ok}.
+    ProcessedGuardMap = process_guard_map(get_guard_map([binary_to_list(Line) || Line <- string:split(Contents, "\r\n", all)])),
+    {finalize_easy(ProcessedGuardMap), finalize_hard(ProcessedGuardMap)}.
 
 get_guard_map(Lines) ->
     get_guard_map(lists:sort(lists:map(fun parse_log_line/1, Lines)), no_guard, #{}).
@@ -39,7 +40,6 @@ process_guard_map(Map) ->
         ActionMap = maps:get(Key, Map),
         analyze_guard_log(ActionMap, Key)
     end, maps:keys(Map))),
-    io:format("~p~n", [X]),
     X.
 
 analyze_guard_log(ActionMap, Guard) ->
@@ -57,9 +57,19 @@ minutes_asleep([{_, wakes} | T], awake, Result) ->
 minutes_asleep([], _, Result) ->
     Result.
 
-finalize(FinalMap) ->
+finalize_easy(FinalMap) ->
     {AllMinutes, Guard} = maps:get(lists:max(maps:keys(FinalMap)), FinalMap),
-    Guard * find_most_common(AllMinutes).
+    {Answer, _} = find_most_common(AllMinutes),
+    Guard * Answer.
+
+finalize_hard(FinalMap) ->
+    ListByOccurences = lists:map(fun(Key) ->
+        {AllMinutes, Guard} = maps:get(Key, FinalMap),
+        {MostCommonMinute, Occurences} = find_most_common(AllMinutes),
+        {Occurences, {Guard, MostCommonMinute}}
+    end, maps:keys(FinalMap)),
+    {_, {G, Min}} = lists:max(ListByOccurences),
+    G * Min.
 
 find_most_common(List) ->
     OccurenceMap = lists:foldl(fun(Ele, Map) ->
@@ -71,8 +81,7 @@ find_most_common(List) ->
         end
     end, #{}, List),
     MostOccurences = lists:max(maps:values(OccurenceMap)),
-    {Answer, MostOccurences} = lists:nth(1, maps:to_list(maps:filter(fun
+    lists:nth(1, maps:to_list(maps:filter(fun
         (_, Occur) when Occur =:= MostOccurences -> true;
         (_, _) -> false
-    end, OccurenceMap))),
-    Answer.
+    end, OccurenceMap))).
