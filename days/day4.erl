@@ -6,9 +6,8 @@ answer() ->
     {finalize(process_guard_map(get_guard_map([binary_to_list(Line) || Line <- string:split(Contents, "\r\n", all)]))), ok}.
 
 get_guard_map(Lines) ->
-    get_guard_map(Lines, no_guard, #{}).
-get_guard_map([H | T], Guard, Map) ->
-    {Date, Minute, Action} = parse_log_line(H),
+    get_guard_map(lists:sort(lists:map(fun parse_log_line/1, Lines)), no_guard, #{}).
+get_guard_map([{Date, Minute, Action} | T], Guard, Map) ->
     case Action of
         NewGuard when is_integer(NewGuard) ->
             get_guard_map(T, NewGuard, Map);
