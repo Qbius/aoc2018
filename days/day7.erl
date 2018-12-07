@@ -13,17 +13,11 @@ answer() ->
 commence_steps([], _, Completed) ->
     lists:reverse(Completed);
 commence_steps(StepList, StepReqs, Completed) ->
-    case first_eligible_step(StepList, StepReqs, Completed) of
-        eh ->
-            io:format("~p~n~p~n~p~n", [StepList, StepReqs, Completed]);
-        Step -> 
-            commence_steps(StepList -- [Step], StepReqs, [Step | Completed])
-    end.
+    Step = first_eligible_step(StepList, StepReqs, Completed),
+    commence_steps(StepList -- [Step], StepReqs, [Step | Completed]).
 
 first_eligible_step([Step | T], StepReqs, Completed) ->
     case lists:all(fun(Req) -> lists:member(Req, Completed) end, maps:get(Step, StepReqs, [])) of
         true -> Step;
         false -> first_eligible_step(T, StepReqs, Completed)
-    end;
-first_eligible_step([], _, _) ->
-    eh.
+    end.
