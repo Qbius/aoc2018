@@ -2,7 +2,7 @@
 -export([get/1]).
 
 compile(Filename) ->
-    case compile:file(Filename) of
+    case compile:file(Filename, debug_info) of
         {ok, Module} ->
             code:purge(Module),
             code:load_file(Module),
