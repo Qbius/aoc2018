@@ -5,7 +5,7 @@ map(Fun, List) ->
     Listen = fun 
         Listen([H | T]) ->
             receive
-                {H, Val} -> [Val | Listen(T)]
+                {H, Val} -> io:format("~p~n", [length(T)]), [Val | Listen(T)]
             end;
         Listen([]) ->
             []
